@@ -1,0 +1,51 @@
+name: Build and Release for Raspberry Pi
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags (e.g., v1.0.0)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Set up Go environment
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.17'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          go mod tidy
+          go mod vendor
+
+      # Set up environment for Raspberry Pi (ARM)
+      - name: Set up cross-compilation for Raspberry Pi
+        run: |
+          echo "Setting up cross-compilation for Raspberry Pi"
+          GOARCH=arm GOARM=7 GOOS=linux go build -o alsamixer2mqtt
+
+      # Create a release and upload the artifact
+      - name: Create GitHub Release and Upload Artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create a new GitHub release
+          RELEASE_TAG=${GITHUB_REF#refs/tags/}
+          echo "Creating release for tag: $RELEASE_TAG"
+          
+          # Use GitHub CLI to create the release
+          gh release create "$RELEASE_TAG" alsamixer2mqtt --title "$RELEASE_TAG" --notes "Release version $RELEASE_TAG"
+
+      # Upload the artifact to the release
+      - name: Upload artifact to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: alsamixer2mqtt
