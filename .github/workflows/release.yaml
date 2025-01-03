@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'  # Trigger on version tags (e.g., v1.0.0)
 
+permissions:
+  contents: write  # to create a github release
+
 jobs:
   build:
     runs-on: ubuntu-latest
