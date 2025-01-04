@@ -29,8 +29,7 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 		"state_topic": "homeassistant/sensor/%s/state",
 		"command_topic": "homeassistant/sensor/%s/set",
 		"unit_of_measurement": "dB",
-		"device_class": "sound_pressure",
-		"value_template": "{{ value_json.level }}"
+		"device_class": "sound_pressure"
 	}`, sensorName, sensorName, sensorName)
 	topic := fmt.Sprintf("homeassistant/sensor/%s/config", sensorName)
 	token := client.Publish(topic, 0, true, sensorConfig)
