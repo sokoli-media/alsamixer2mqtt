@@ -2,24 +2,29 @@ package main
 
 import (
 	"alsamixer2mqtt/internal"
+	"log"
 	"os"
 )
 
-func getEnv(key string, defaultValue string) string {
+func getEnv(key string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
-		return defaultValue
+		log.Fatalf("couldn't load environmental variable: %s", key)
 	}
 	return value
 }
 
 func main() {
-	mqttBroker := getEnv("MQTT_BROKER", "tcp://localhost:1883")
-	mqttUsername := getEnv("MQTT_USERNAME", "")
-	mqttPassword := getEnv("MQTT_PASSWORD", "")
-	alsaDevice := getEnv("ALSA_DEVICE", "default")
-	alsaControl := getEnv("ALSA_CONTROL", "Master")
-	sensorName := getEnv("SENSOR_NAME", "wyoming_satellite_sound_pressure") // used also as part of the topic name
+	config := internal.Config{
+		MqttBroker:   getEnv("MQTT_BROKER"),
+		MqttClientId: getEnv("MQTT_CLIENT_ID"),
+		MqttUsername: getEnv("MQTT_USERNAME"),
+		MqttPassword: getEnv("MQTT_PASSWORD"),
+		AlsaDevice:   getEnv("ALSA_DEVICE"),
+		AlsaControl:  getEnv("ALSA_CONTROL"),
+		StateTopic:   getEnv("STATE_TOPIC"),
+		SetTopic:     getEnv("SET_TOPIC"),
+	}
 
-	internal.Run(mqttBroker, mqttUsername, mqttPassword, alsaDevice, alsaControl, sensorName)
+	internal.Run(config)
 }

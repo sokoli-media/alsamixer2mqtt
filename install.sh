@@ -24,20 +24,26 @@ else
     # Step 3: Prompt for environment variables if .env file does not exist
     echo "No existing .env file found. Prompting for environment variables..."
     MQTT_BROKER=$(prompt_env_variable "MQTT_BROKER" "tcp://localhost:1883")
+    MQTT_CLIENT_ID=$(prompt_env_variable "MQTT_CLIENT_ID" "alsamixer2mqtt")
     MQTT_USERNAME=$(prompt_env_variable "MQTT_USERNAME" "")
     MQTT_PASSWORD=$(prompt_env_variable "MQTT_PASSWORD" "")
     ALSA_DEVICE=$(prompt_env_variable "ALSA_DEVICE" "default")
     ALSA_CONTROL=$(prompt_env_variable "ALSA_CONTROL" "Master")
+    STATE_TOPIC=$(prompt_env_variable "STATE_TOPIC" "")
+    SET_TOPIC=$(prompt_env_variable "SET_TOPIC" "")
 
     # Step 4: Create the .env file with the environment variables
     echo "Creating .env file..."
     sudo mkdir -p "$INSTALL_DIR"
     sudo tee "$ENV_FILE" > /dev/null <<EOF
 MQTT_BROKER=$MQTT_BROKER
+MQTT_CLIENT_ID=$MQTT_CLIENT_ID
 MQTT_USERNAME=$MQTT_USERNAME
 MQTT_PASSWORD=$MQTT_PASSWORD
 ALSA_DEVICE=$ALSA_DEVICE
 ALSA_CONTROL=$ALSA_CONTROL
+STATE_TOPIC=$STATE_TOPIC
+SET_TOPIC=$SET_TOPIC
 EOF
 fi
 

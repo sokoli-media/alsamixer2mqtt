@@ -6,19 +6,15 @@ import (
 )
 
 func Test_ParseAlsaMixerVolume(t *testing.T) {
-	parsed, err := parseAlsaVolume("[42.00dB]")
+	parsed, err := parseAlsaVolume("[42%]")
 	require.NoError(t, err)
-	require.Equal(t, 42.0, parsed)
+	require.Equal(t, 42, parsed)
 
-	parsed, err = parseAlsaVolume("[-42.00dB]")
+	parsed, err = parseAlsaVolume("[42%] [12.00dB]")
 	require.NoError(t, err)
-	require.Equal(t, -42.0, parsed)
+	require.Equal(t, 42, parsed)
 
-	parsed, err = parseAlsaVolume("[xxx] [42.00dB]")
+	parsed, err = parseAlsaVolume("[12] [42%]")
 	require.NoError(t, err)
-	require.Equal(t, 42.0, parsed)
-
-	parsed, err = parseAlsaVolume("[8%] [42.00dB]")
-	require.NoError(t, err)
-	require.Equal(t, 42.0, parsed)
+	require.Equal(t, 42, parsed)
 }
