@@ -29,8 +29,12 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 		"state_topic": "homeassistant/sensor/%s/state",
 		"command_topic": "homeassistant/sensor/%s/set",
 		"unit_of_measurement": "dB",
-		"device_class": "sound_pressure"
-	}`, sensorName, sensorName, sensorName)
+		"device_class": "sound_pressure",
+		"device": {
+			"name": "AlsaMixer for %s",
+			"identifiers": ["%s"]
+		  }
+	}`, sensorName, sensorName, sensorName, sensorName, sensorName)
 	topic := fmt.Sprintf("homeassistant/sensor/%s/config", sensorName)
 	token := client.Publish(topic, 0, true, sensorConfig)
 	log.Printf("Sent autodiscovery message to topic=%s payload=%s", topic, sensorConfig)
