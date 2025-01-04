@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os/exec"
 	"regexp"
@@ -36,7 +37,7 @@ func parseAlsaVolume(output string) (int, error) {
 }
 
 func setAlsaVolume(device, control string, volume int) error {
-	cmd := exec.Command("amixer", "-D", device, "set", control, strconv.Itoa(volume))
+	cmd := exec.Command("amixer", "-D", device, "set", control, fmt.Sprintf("%d%%", volume))
 	if err := cmd.Run(); err != nil {
 		return err
 	}
