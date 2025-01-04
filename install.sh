@@ -74,11 +74,17 @@ User=$(whoami)
 WantedBy=multi-user.target
 EOF
 
-# Step 8: Reload systemd, enable and start the service
-echo "Enabling and starting the service..."
-sudo systemctl daemon-reload
-sudo systemctl enable alsamixer2mqtt.service
-sudo systemctl start alsamixer2mqtt.service
+if systemctl is-active --quiet alsamixer2mqtt.service; then
+  # Step 8: Reload systemd, enable and start the service
+  echo "Enabling and starting the service..."
+  sudo systemctl daemon-reload
+  sudo systemctl enable alsamixer2mqtt.service
+  sudo systemctl start alsamixer2mqtt.service
+else
+  echo "Restarting the service..."
+  sudo systemctl daemon-reload
+  sudo systemctl restart alsamixer2mqtt.service
+fi
 
 echo "Installation complete. The service is now running."
 
