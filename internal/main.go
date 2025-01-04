@@ -27,6 +27,7 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 	// Publish the discovery message
 	sensorConfig := fmt.Sprintf(`{
 		"name": "%s",
+		"object_id": "%s",
 		"state_topic": "homeassistant/sensor/%s/state",
 		"command_topic": "homeassistant/sensor/%s/set",
 		"unit_of_measurement": "dB",
