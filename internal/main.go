@@ -30,6 +30,7 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 		"command_topic": "homeassistant/sensor/%s/set",
 		"unit_of_measurement": "dB",
 		"device_class": "sound_pressure",
+		"value_template": "{{ value_json }}",
 		"device": {
 			"name": "AlsaMixer for %s",
 			"identifiers": ["%s"]
