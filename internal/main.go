@@ -33,6 +33,7 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 	}`, sensorName, sensorName, sensorName)
 	topic := fmt.Sprintf("homeassistant/sensor/%s/config", sensorName)
 	token := client.Publish(topic, 0, true, sensorConfig)
+	log.Printf("Sent autodiscovery message to topic=%s payload=%s", topic, sensorConfig)
 	token.Wait()
 
 	go func() {
@@ -44,18 +45,19 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 				continue
 			}
 
-			topic := fmt.Sprintf("homeassistant/sensor/%s/state", sensorName)
+			topic = fmt.Sprintf("homeassistant/sensor/%s/state", sensorName)
 			dumpedVolume := strconv.FormatFloat(volume, 'f', -1, 64)
-			token := client.Publish(topic, 0, true, dumpedVolume)
+			token = client.Publish(topic, 0, true, dumpedVolume)
 			token.Wait()
-			log.Printf("Published volume: %s", dumpedVolume)
+			log.Printf("Published volume to topic=%s: %s", topic, dumpedVolume)
 
 			time.Sleep(500 * time.Millisecond)
 		}
 	}()
 
 	topic = fmt.Sprintf("homeassistant/sensor/%s/set", sensorName)
-	if token := client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
+	log.Printf("subscribing to topic: %s", topic)
+	if token = client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 		newVolume, err := strconv.ParseFloat(string(msg.Payload()), 64)
 		if err != nil {
 			log.Printf("Invalid volume value: %s", msg.Payload())
