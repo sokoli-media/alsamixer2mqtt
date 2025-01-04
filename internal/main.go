@@ -51,7 +51,7 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 		}
 	}()
 
-	topic := "homeassistant/sensor/sound_level/set"
+	topic = "homeassistant/sensor/sound_level/set"
 	if token := client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 		newVolume, err := strconv.Atoi(string(msg.Payload()))
 		if err != nil {
