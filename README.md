@@ -17,7 +17,9 @@ Add to `configuration.yaml`:
 ```yaml
 mqtt:
   - number:
-      name: any_name_you_may_think_about
+      name: Friendly name
+      object_id: not_friendly_name_used_for_entity_id
+      icon: mdi:account-voice
       command_topic: topic_you_set_in_the_installation_process
       state_topic: topic_you_set_in_the_installation_process
       unit_of_measurement: '%'
