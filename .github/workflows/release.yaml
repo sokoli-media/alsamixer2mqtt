@@ -29,6 +29,10 @@ jobs:
           go mod tidy
           go mod vendor
 
+      - name: Run tests
+        run: |
+          go test ./...
+
       # Set up environment for Raspberry Pi (ARM)
       - name: Set up cross-compilation for Raspberry Pi
         run: |

@@ -81,3 +81,21 @@ sudo systemctl enable alsamixer2mqtt.service
 sudo systemctl start alsamixer2mqtt.service
 
 echo "Installation complete. The service is now running."
+
+# Display instructions for accessing logs
+echo ""
+echo "You can now check the service status and logs using the following commands:"
+echo ""
+echo "To check the status of the service:"
+echo "  sudo systemctl status alsamixer2mqtt"
+echo ""
+echo "To view logs from the service using journalctl:"
+echo "  sudo journalctl -u alsamixer2mqtt -f"
+echo ""
+echo "Logs will be displayed in real-time with the -f flag."
+echo ""
+echo "If you need to stop the service, use:"
+echo "  sudo systemctl stop alsamixer2mqtt"
+echo ""
+echo "To restart the service:"
+echo "  sudo systemctl restart alsamixer2mqtt"
