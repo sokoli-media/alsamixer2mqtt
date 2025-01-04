@@ -19,6 +19,7 @@ func main() {
 	mqttPassword := getEnv("MQTT_PASSWORD", "")
 	alsaDevice := getEnv("ALSA_DEVICE", "default")
 	alsaControl := getEnv("ALSA_CONTROL", "Master")
+	sensorName := getEnv("SENSOR_NAME", "wyoming-satellite alsa")
 
-	internal.Run(mqttBroker, mqttUsername, mqttPassword, alsaDevice, alsaControl)
+	internal.Run(mqttBroker, mqttUsername, mqttPassword, alsaDevice, alsaControl, sensorName)
 }

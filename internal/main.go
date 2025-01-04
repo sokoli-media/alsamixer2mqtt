@@ -1,13 +1,14 @@
 package internal
 
 import (
+	"fmt"
 	"github.com/eclipse/paho.mqtt.golang"
 	"log"
 	"strconv"
 	"time"
 )
 
-func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice string, alsaControl string) {
+func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice string, alsaControl string, sensorName string) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(mqttBroker)
 	opts.SetClientID("alsamixer2mqtt")
@@ -21,6 +22,20 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 		log.Fatalf("Failed to connect to MQTT broker: %v", token.Error())
 	}
 	defer client.Disconnect(250)
+
+	// Publish the discovery message
+	sensorConfig := fmt.Sprintf(`{
+		"name": "%s",
+		"state_topic": "homeassistant/sensor/sound_level/state",
+		"command_topic": "homeassistant/sensor/sound_level/set",
+		"unit_of_measurement": "%%",
+		"device_class": "sound_level",
+		"value_template": "{{ value_json.level }}",
+		"availability_topic": "homeassistant/sensor/sound_level/availability"
+	}`, sensorName)
+	topic := "homeassistant/sensor/sound_level/config"
+	token := client.Publish(topic, 0, true, sensorConfig)
+	token.Wait()
 
 	go func() {
 		for {
