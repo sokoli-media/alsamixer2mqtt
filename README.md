@@ -4,6 +4,8 @@ This project allows you to bridge ALSA sound controls (e.g., volume levels) with
 
 ## Installation
 
+Run as any user on your RaspberryPi:
+
 ```bash
 bash <(wget -qO- https://raw.githubusercontent.com/sokoli-media/alsamixer2mqtt/main/install.sh)
 ```
@@ -18,7 +20,8 @@ mqtt:
       name: any_name_you_may_think_about
       command_topic: topic_you_set_in_the_installation_process
       state_topic: topic_you_set_in_the_installation_process
-      step: 1
+      unit_of_measurement: '%'
       min: 0
       max: 100
+      step: 1
 ```
