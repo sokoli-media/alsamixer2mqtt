@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/eclipse/paho.mqtt.golang"
 	"log"
@@ -30,11 +31,13 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 		"command_topic": "homeassistant/sensor/%s/set",
 		"unit_of_measurement": "dB",
 		"device_class": "sound_pressure",
-		"value_template": "{{ value_json }}",
+		"value_template": "{{ value_json.value }}",
 		"device": {
 			"name": "AlsaMixer for %s",
-			"identifiers": ["%s"]
-		  }
+			"identifiers": ["%s"],
+			"model": "AlsaMixer",
+			"manufacturer": "AlsaMixer"
+		}
 	}`, sensorName, sensorName, sensorName, sensorName, sensorName)
 	topic := fmt.Sprintf("homeassistant/sensor/%s/config", sensorName)
 	token := client.Publish(topic, 0, true, sensorConfig)
@@ -51,10 +54,17 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 			}
 
 			topic = fmt.Sprintf("homeassistant/sensor/%s/state", sensorName)
-			dumpedVolume := strconv.FormatFloat(volume, 'f', -1, 64)
-			token = client.Publish(topic, 0, true, dumpedVolume)
+			payload := map[string]float64{
+				"value": volume,
+			}
+			dumpedPayload, err := json.Marshal(payload)
+			if err != nil {
+				log.Printf("error while sending updated value: %v", err)
+				continue
+			}
+			token = client.Publish(topic, 0, true, dumpedPayload)
 			token.Wait()
-			log.Printf("Published volume to topic=%s: %s", topic, dumpedVolume)
+			log.Printf("Published volume to topic=%s: %s", topic, dumpedPayload)
 
 			time.Sleep(500 * time.Millisecond)
 		}
