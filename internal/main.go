@@ -28,8 +28,8 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 		"name": "%s",
 		"state_topic": "homeassistant/sensor/%s/state",
 		"command_topic": "homeassistant/sensor/%s/set",
-		"unit_of_measurement": "%%",
-		"device_class": "measurement",
+		"unit_of_measurement": "dB",
+		"device_class": "sound_pressure",
 		"value_template": "{{ value_json.level }}"
 	}`, sensorName, sensorName, sensorName)
 	topic := fmt.Sprintf("homeassistant/sensor/%s/config", sensorName)
@@ -38,12 +38,13 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 
 	go func() {
 		for {
-			volume := getAlsaVolume(alsaDevice, alsaControl)
-			if volume >= 0 {
+			volume, err := getAlsaVolume(alsaDevice, alsaControl)
+			if err != nil {
 				topic := fmt.Sprintf("homeassistant/sensor/%s/state", sensorName)
-				token := client.Publish(topic, 0, true, strconv.Itoa(volume))
+				dumpedVolume := strconv.FormatFloat(volume, 'f', -1, 64)
+				token := client.Publish(topic, 0, true, dumpedVolume)
 				token.Wait()
-				log.Printf("Published volume: %d%%", volume)
+				log.Printf("Published volume: %s", dumpedVolume)
 			}
 
 			time.Sleep(500 * time.Millisecond)
@@ -52,13 +53,15 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 
 	topic = fmt.Sprintf("homeassistant/sensor/%s/set", sensorName)
 	if token := client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
-		newVolume, err := strconv.Atoi(string(msg.Payload()))
+		newVolume, err := strconv.ParseFloat(string(msg.Payload()), 64)
 		if err != nil {
 			log.Printf("Invalid volume value: %s", msg.Payload())
 			return
 		}
 		if err = setAlsaVolume(alsaDevice, alsaControl, newVolume); err != nil {
-			log.Printf("Set volume to: %d%%", newVolume)
+			log.Printf("Failed to set volume: %v", err)
+		} else {
+			log.Printf("Set volume to: %f%%", newVolume)
 		}
 	}); token.Wait() && token.Error() != nil {
 		log.Fatalf("Failed to subscribe to topic: %v", token.Error())
