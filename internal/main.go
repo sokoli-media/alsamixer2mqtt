@@ -39,12 +39,16 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 		for {
 			volume, err := getAlsaVolume(alsaDevice, alsaControl)
 			if err != nil {
-				topic := fmt.Sprintf("homeassistant/sensor/%s/state", sensorName)
-				dumpedVolume := strconv.FormatFloat(volume, 'f', -1, 64)
-				token := client.Publish(topic, 0, true, dumpedVolume)
-				token.Wait()
-				log.Printf("Published volume: %s", dumpedVolume)
+				log.Printf("error while getting alsa volume: %v", err)
+				time.Sleep(500 * time.Millisecond)
+				continue
 			}
+
+			topic := fmt.Sprintf("homeassistant/sensor/%s/state", sensorName)
+			dumpedVolume := strconv.FormatFloat(volume, 'f', -1, 64)
+			token := client.Publish(topic, 0, true, dumpedVolume)
+			token.Wait()
+			log.Printf("Published volume: %s", dumpedVolume)
 
 			time.Sleep(500 * time.Millisecond)
 		}
