@@ -11,7 +11,7 @@ import (
 func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice string, alsaControl string, sensorName string) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(mqttBroker)
-	opts.SetClientID("alsamixer2mqtt")
+	opts.SetClientID(sensorName)
 	if mqttUsername != "" && mqttPassword != "" {
 		opts.SetUsername(mqttUsername)
 		opts.SetPassword(mqttPassword)
@@ -26,14 +26,13 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 	// Publish the discovery message
 	sensorConfig := fmt.Sprintf(`{
 		"name": "%s",
-		"state_topic": "homeassistant/sensor/sound_level/state",
-		"command_topic": "homeassistant/sensor/sound_level/set",
+		"state_topic": "homeassistant/sensor/%s/state",
+		"command_topic": "homeassistant/sensor/%s/set",
 		"unit_of_measurement": "%%",
-		"device_class": "sound_level",
-		"value_template": "{{ value_json.level }}",
-		"availability_topic": "homeassistant/sensor/sound_level/availability"
-	}`, sensorName)
-	topic := "homeassistant/sensor/sound_level/config"
+		"device_class": "measurement",
+		"value_template": "{{ value_json.level }}"
+	}`, sensorName, sensorName, sensorName)
+	topic := fmt.Sprintf("homeassistant/sensor/%s/config", sensorName)
 	token := client.Publish(topic, 0, true, sensorConfig)
 	token.Wait()
 
@@ -41,7 +40,7 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 		for {
 			volume := getAlsaVolume(alsaDevice, alsaControl)
 			if volume >= 0 {
-				topic := "homeassistant/sensor/sound_level/state"
+				topic := fmt.Sprintf("homeassistant/sensor/%s/state", sensorName)
 				token := client.Publish(topic, 0, true, strconv.Itoa(volume))
 				token.Wait()
 				log.Printf("Published volume: %d%%", volume)
@@ -51,7 +50,7 @@ func Run(mqttBroker string, mqttUsername string, mqttPassword string, alsaDevice
 		}
 	}()
 
-	topic = "homeassistant/sensor/sound_level/set"
+	topic = fmt.Sprintf("homeassistant/sensor/%s/set", sensorName)
 	if token := client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 		newVolume, err := strconv.Atoi(string(msg.Payload()))
 		if err != nil {

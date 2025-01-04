@@ -19,7 +19,7 @@ func main() {
 	mqttPassword := getEnv("MQTT_PASSWORD", "")
 	alsaDevice := getEnv("ALSA_DEVICE", "default")
 	alsaControl := getEnv("ALSA_CONTROL", "Master")
-	sensorName := getEnv("SENSOR_NAME", "wyoming-satellite alsa")
+	sensorName := getEnv("SENSOR_NAME", "wyoming_satellite_sound_level") // used also as part of the topic name
 
 	internal.Run(mqttBroker, mqttUsername, mqttPassword, alsaDevice, alsaControl, sensorName)
 }
