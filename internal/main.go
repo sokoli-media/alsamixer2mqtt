@@ -68,7 +68,7 @@ func Run(config Config) {
 
 	subscribeToUpdates(config, client)
 
-	timer := time.NewTicker(5 * time.Second)
+	timer := time.NewTicker(30 * time.Second)
 	for range timer.C {
 		publishCurrentState(config, client)
 	}
