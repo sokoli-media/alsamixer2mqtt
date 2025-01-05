@@ -2,6 +2,7 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/eclipse/paho.mqtt.golang"
 	"log"
 	"strconv"
@@ -25,7 +26,7 @@ func publishCurrentState(config Config, client mqtt.Client) {
 	log.Printf("Published volume to topic=%s: %s", config.StateTopic, dumpedPayload)
 }
 
-func subscribeToUpdates(config Config, client mqtt.Client) {
+func subscribeToUpdates(config Config, client mqtt.Client) error {
 	log.Printf("subscribing to topic: %s", config.SetTopic)
 	if token := client.Subscribe(config.SetTopic, 0, func(client mqtt.Client, msg mqtt.Message) {
 		newVolume, err := strconv.Atoi(string(msg.Payload()))
@@ -41,11 +42,13 @@ func subscribeToUpdates(config Config, client mqtt.Client) {
 			publishCurrentState(config, client)
 		}
 	}); token.Wait() && token.Error() != nil {
-		log.Fatalf("Failed to subscribe to topic: %v", token.Error())
+		return token.Error()
 	}
+
+	return nil
 }
 
-func connectToMqtt(config Config) mqtt.Client {
+func connectToMqtt(config Config) (mqtt.Client, error) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(config.MqttBroker)
 	opts.SetClientID(config.MqttClientId)
@@ -56,20 +59,36 @@ func connectToMqtt(config Config) mqtt.Client {
 
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		log.Fatalf("Failed to connect to MQTT broker: %v", token.Error())
+		return nil, fmt.Errorf("failed to connect to MQTT broker: %v", token.Error())
 	}
 
-	return client
+	return client, nil
 }
 
-func Run(config Config) {
-	client := connectToMqtt(config)
+func connectAndConsume(config Config) {
+	client, err := connectToMqtt(config)
+	if err != nil {
+		log.Printf("couldn't connect to mqtt server: %v", err)
+		time.Sleep(5 * time.Second)
+		return
+	}
 	defer client.Disconnect(250)
 
-	subscribeToUpdates(config, client)
+	err = subscribeToUpdates(config, client)
+	if err != nil {
+		log.Printf("couldn't start consuming from mqtt: %v", err)
+		time.Sleep(5 * time.Second)
+		return
+	}
 
 	timer := time.NewTicker(30 * time.Second)
 	for range timer.C {
 		publishCurrentState(config, client)
+	}
+}
+
+func Run(config Config) {
+	for {
+		connectAndConsume(config)
 	}
 }
