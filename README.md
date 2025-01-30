@@ -22,6 +22,7 @@ mqtt:
       icon: mdi:account-voice
       command_topic: topic_you_set_in_the_installation_process
       state_topic: topic_you_set_in_the_installation_process
+      retain: true
       unit_of_measurement: '%'
       min: 0
       max: 100
